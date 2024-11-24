@@ -1,6 +1,6 @@
 import dataclasses
 from typing import Optional
-from leaguepedia_parser.site.leaguepedia import leaguepedia
+from leaguepedia_parser.site.leaguepedia import LeaguepediaSite
 
 
 @dataclasses.dataclass
@@ -10,7 +10,9 @@ class TeamAssets:
     long_name: str  # Aka display name
 
 
-def get_all_team_assets(team_link: str) -> TeamAssets:
+def get_all_team_assets(
+    leaguepedia_site: LeaguepediaSite, team_link: str
+) -> TeamAssets:
     """
 
     Args:
@@ -20,7 +22,7 @@ def get_all_team_assets(team_link: str) -> TeamAssets:
         A TeamAssets object
 
     """
-    result = leaguepedia.site.client.api(
+    result = leaguepedia_site.site.client.api(
         action="query",
         format="json",
         prop="imageinfo",
@@ -34,7 +36,7 @@ def get_all_team_assets(team_link: str) -> TeamAssets:
     for v in pages.values():
         urls.append(v["imageinfo"][0]["url"])
 
-    long_name = leaguepedia.site.cache.get("Team", team_link, "link")
+    long_name = leaguepedia_site.site.cache.get("Team", team_link, "link")
 
     return TeamAssets(
         thumbnail_url=urls[1],
@@ -71,7 +73,9 @@ def get_team_thumbnail(team_name: str, _retry=True) -> str:
     return _get_team_asset(f"File:{team_name}logo std.png", team_name, _retry)
 
 
-def _get_team_asset(asset_name: str, team_name: str, _retry=True) -> str:
+def _get_team_asset(
+    leaguepedia_site: LeaguepediaSite, asset_name: str, team_name: str, _retry=True
+) -> str:
     """
     Returns the team thumbnail URL
 
@@ -82,7 +86,7 @@ def _get_team_asset(asset_name: str, team_name: str, _retry=True) -> str:
     Returns:
         URL pointing to the team’s logo
     """
-    result = leaguepedia.site.client.api(
+    result = leaguepedia_site.site.client.api(
         action="query",
         format="json",
         prop="imageinfo",
@@ -107,6 +111,7 @@ def _get_team_asset(asset_name: str, team_name: str, _retry=True) -> str:
 
 
 def get_long_team_name_from_trigram(
+    leaguepedia_site: LeaguepediaSite,
     team_abbreviation: str,
     event_overview_page: str = None,
 ) -> Optional[str]:
@@ -128,9 +133,9 @@ def get_long_team_name_from_trigram(
     team_abbreviation = team_abbreviation.lower()
 
     if event_overview_page:
-        return leaguepedia.site.cache.get_team_from_event_tricode(
+        return leaguepedia_site.site.cache.get_team_from_event_tricode(
             event_overview_page, team_abbreviation
         )
 
     else:
-        return leaguepedia.site.cache.get("Team", team_abbreviation, "link")
+        return leaguepedia_site.site.cache.get("Team", team_abbreviation, "link")

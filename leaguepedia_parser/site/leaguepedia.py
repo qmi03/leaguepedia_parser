@@ -50,7 +50,3 @@ class LeaguepediaSite:
                 break
 
         return result
-
-
-# Ghost loaded instance shared by all other classes
-leaguepedia = LeaguepediaSite()
